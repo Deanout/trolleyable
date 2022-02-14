@@ -1,5 +1,6 @@
 import './App.css';
 import MenuAppBar from './NavBar';
+import Signup from './Signup';
 
 function App() {
   return (
@@ -8,7 +9,7 @@ function App() {
         {MenuAppBar()}
       </header>
       <main className="App-main">
-    
+        <Signup/>
       </main>
       
     </div>
