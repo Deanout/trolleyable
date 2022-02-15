@@ -1,20 +1,58 @@
-import { AuthProvider } from '../contexts/AuthContext';
 import './App.css';
 import MenuAppBar from './NavBar';
 import Signup from './Signup';
-
+import {BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Dashboard from './Dashboard';
+import Login from './Login';
+import PrivateRoute from './PrivateRoute';
+import ForgotPassword from './ForgotPassword';
+import UpdateProfile from './UpdateProfile';
+import { useEffect, useState } from 'react';
+import { store } from '../app/store';
+import { auth } from '../firebase';
+import { useDispatch } from 'react-redux';
+import { setCurrentUser } from '../features/auth/authSlice';
+declare global {
+  interface Window { test: any; }
+}
 function App() {
+  const [user, setUser] = useState(null);
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      const payload = {
+          user: user
+      }
+      dispatch(setCurrentUser(payload));
+    });
+    return unsubscribe;
+  }, [auth])
   return (
-    <AuthProvider>
     <div className="App">
-      <header className="App-header">
-        {MenuAppBar()}
-      </header>
-      <main className="App-main">
-        <Signup/>
-      </main>
+          <Router>
+            <header className="App-header">
+                {MenuAppBar()}
+            </header>
+            <main className="App-main">
+              <Routes>
+                <Route path="/" element={
+                  <PrivateRoute>
+                    <Dashboard />
+                  </PrivateRoute>
+                }/>
+                <Route path="/update-profile" element={
+                  <PrivateRoute>
+                    <Dashboard/>
+                  </PrivateRoute>
+                }/>
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/forgot-password" element={<ForgotPassword/>} />
+              </Routes>
+          </main>
+          </Router>
     </div>
-    </AuthProvider>
   );
 }
 

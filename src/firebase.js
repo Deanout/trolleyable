@@ -1,3 +1,4 @@
+import { connectAuthEmulator } from "firebase/auth";
 import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 
@@ -11,5 +12,12 @@ const app = firebase.initializeApp({
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 });
 
+if (process.env.REACT_APP_ENVIRONMENT === "development") {
+  connectAuthEmulator(app.auth(), "http://localhost:9099");
+}
+
+app.auth().setPersistence("local");
+
 export const auth = app.auth();
+
 export default app;

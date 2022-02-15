@@ -2,13 +2,12 @@ import { Alert, Box, Button, Card, CardActions, CardContent, Container, Divider,
 import { useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { signUpUser } from '../features/auth/authSlice';
+import { useAuth  } from '../contexts/AuthContext';
+import { loginUser } from '../features/auth/authSlice';
 
-function Signup() {
+function Login() {
     const emailRef = useRef<HTMLInputElement>();
     const passwordRef = useRef<HTMLInputElement>();
-    const passwordConfirmationRef = useRef<HTMLInputElement>();
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate();
@@ -18,15 +17,9 @@ function Signup() {
         event.preventDefault();
         if (emailRef?.current === undefined
             || emailRef.current.value === ""
-            || passwordRef?.current === undefined
-            || passwordRef.current.value === ""
-            || passwordConfirmationRef?.current === undefined
-            || passwordConfirmationRef.current.value === "") {
+        || passwordRef?.current === undefined
+        || passwordRef.current.value === "") {
             return setError("Please fill out all fields")
-        }
-
-        if (passwordRef.current.value !== passwordConfirmationRef.current.value) {
-            return setError("Passwords do not match")
         }
     
         try {
@@ -36,13 +29,13 @@ function Signup() {
                 email: emailRef.current.value, 
                 password: passwordRef.current.value 
             }
-            dispatch(signUpUser(payload));
+            dispatch(loginUser(payload))
+            setLoading(false)
             navigate("/");
-
         } catch {
-            setError("Failed to sign in.")
+            setError("Failed to create an account")
         }
-        setLoading(false)
+
     }
 
   return (
@@ -52,7 +45,7 @@ function Signup() {
                     <CardContent>
                         <Container maxWidth="sm">
                             <Typography variant="h2" color="text.primary" gutterBottom>
-                            Sign Up
+                            Login
                             </Typography>
                             { error && <Alert severity="error">{error}</Alert> }
                             <form onSubmit={handleSubmit}>
@@ -60,7 +53,6 @@ function Signup() {
                                     <FormControl fullWidth>
                                         <InputLabel required htmlFor="email" id="email-label">Email Address</InputLabel>
                                         <Input id="email" type="email" inputRef={emailRef}/>
-                                        <FormHelperText id="email-helper-text">We'll never share your email.</FormHelperText>
                                     </FormControl>
                                 </FormGroup>
                                 <FormGroup row={true} id="password-group" sx={{marginTop: "1em"}}>
@@ -69,15 +61,9 @@ function Signup() {
                                         <Input id="password" type="password" inputRef={passwordRef}/>
                                     </FormControl>
                                 </FormGroup>
-                                <FormGroup row={true} id="password-confirmation-group" sx={{marginTop: "1em"}}>
-                                    <FormControl fullWidth>
-                                        <InputLabel required htmlFor="password-confirmation" id="password-confirmation-label">Password Confirmation</InputLabel>
-                                        <Input id="password-confirmation" type="password" inputRef={passwordConfirmationRef} />
-                                    </FormControl>
-                                </FormGroup>
                                 <FormGroup row={true} id="submit-group"sx={{marginTop: "1em"}}>
                                     <FormControl fullWidth>
-                                        <Button disabled={loading} variant="contained" color="primary" type="submit" id="submit-button">Create Account</Button>
+                                        <Button disabled={loading} variant="contained" color="primary" type="submit" id="submit-button">Login</Button>
                                     </FormControl>
                                 </FormGroup>
                             </form>
@@ -86,7 +72,10 @@ function Signup() {
                     <Divider light={false} />
                     <CardActions sx={{marginTop: "1em", justifyContent: 'center' }} disableSpacing >
                         <Box>
-                            Already have an account? <Link to="/login">Login!</Link>
+                            <Typography variant="body2" color="text.secondary" align="center">
+                                <Link to="/forgot-password">Forgot Password?</Link>
+                            </Typography>
+                            <Link to="/signup">Create an Account!</Link>
                         </Box>
                     </CardActions>
                 </Card>
@@ -95,4 +84,4 @@ function Signup() {
     </div>
     );
 }
-export default Signup;
+export default Login;

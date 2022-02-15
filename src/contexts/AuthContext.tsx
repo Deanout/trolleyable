@@ -1,14 +1,24 @@
 import { Observer } from '@reduxjs/toolkit';
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { auth } from "../firebase";
+import { auth } from '../firebase';
+import {
+    User,
+  } from "firebase/auth";
 
-const AuthContext = createContext({
-    currentUser: {
-        email: '',
-    },
-    signup: (email: string, password: string) => {},
-    login: (email: string, password: string) => {},
-});
+interface AuthContextInterface { 
+    currentUser: User | null; 
+    loading: boolean;
+    login: (email: string, password: string) => Promise<any>;
+    logout: () => Promise<void>;
+    signUp: (email: string, password: string) => Promise<any>;
+    resetPassword: (email: string) => Promise<any>;
+    updateEmail: (email: string) => Promise<any>;
+    updatePassword: (password: string) => Promise<any>;
+    setCurrentUser: (user: User | null) => void;
+
+}
+
+const AuthContext = createContext<AuthContextInterface>({} as AuthContextInterface);
 
 export function useAuth() {
     return useContext(AuthContext);
@@ -19,39 +29,44 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({children}: AuthProviderProps) : any {
-    const [currentUser, setCurrentUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const authContext = useContext(AuthContext);
 
-    function signup(email:string, password:string) {
+
+    authContext.signUp = function signup(email:string, password:string) {
         return auth.createUserWithEmailAndPassword(email, password);
     };
 
-    function login(email:string, password:string) {
+    authContext.login = async function login(email:string, password:string) {
         return auth.signInWithEmailAndPassword(email, password);
     };
 
+    authContext.logout = function logout() {
+        return auth.signOut();
+    };
+
+    authContext.resetPassword = function resetPassword(email) {
+        return auth.sendPasswordResetEmail(email)
+      }
+
+    authContext.setCurrentUser = function setCurrentUser(user: User | null) {
+        authContext.currentUser = user;
+    }
+
+
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user: any) => {
-            setCurrentUser(user);
-            setLoading(false);
+            authContext.loading = true;
+            console.log("Auth state changed");
+            console.log(user);
+            authContext.setCurrentUser(user);
+            authContext.loading = false;
         });
         return unsubscribe;
     }, []);
 
-    auth.onAuthStateChanged((user: any) => {
-        setCurrentUser(user);
-    });
-
-    const value = {
-        currentUser: {
-            email: "",
-        },
-        signup,
-        login
-    };
   return (
-    <AuthContext.Provider value={value}>
-        {!loading && children}
+    <AuthContext.Provider value={authContext}>
+        {!authContext.loading && children}
     </AuthContext.Provider>
   )
 }
