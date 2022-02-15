@@ -7,8 +7,7 @@ import Login from './Login';
 import PrivateRoute from './PrivateRoute';
 import ForgotPassword from './ForgotPassword';
 import UpdateProfile from './UpdateProfile';
-import { useEffect, useState } from 'react';
-import { store } from '../app/store';
+import { useEffect } from 'react';
 import { auth } from '../firebase';
 import { useDispatch } from 'react-redux';
 import { setCurrentUser } from '../features/auth/authSlice';
@@ -16,7 +15,6 @@ declare global {
   interface Window { test: any; }
 }
 function App() {
-  const [user, setUser] = useState(null);
   const dispatch = useDispatch()
 
   useEffect(() => {

@@ -1,15 +1,15 @@
 import { Alert, Box, Button, Card, CardActions, CardContent, Container, Divider, FormControl, FormGroup, FormHelperText, Grid, Input, InputLabel, Typography } from '@mui/material';
 import { useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth  } from '../contexts/AuthContext';
+import { resetPassword } from '../features/auth/authSlice';
 
 function ForgotPassword() {
     const emailRef = useRef<HTMLInputElement>();
-
-    const { resetPassword } = useAuth();
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState("")
+    const dispatch = useDispatch()
     
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -22,7 +22,10 @@ function ForgotPassword() {
             setMessage("")
             setError("")
             setLoading(true)
-            await resetPassword(emailRef.current.value)
+            const payload = {
+                email: emailRef.current.value
+            }
+            dispatch(resetPassword(payload))
             setMessage("Sending password reset request if email exists.")
         } catch {
             setError("Failed to request password reset.")

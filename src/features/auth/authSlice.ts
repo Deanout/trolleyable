@@ -49,8 +49,8 @@ export const signUpUser = createAsyncThunk(
   }
 );
 
-export const ResetPasswordPayload = createAsyncThunk(
-  "auth/signUpUser",
+export const resetPassword = createAsyncThunk(
+  "auth/resetPassword",
   async (payload: ResetPasswordPayload) => {
     const response = await auth.sendPasswordResetEmail(payload.email);
     return response;
@@ -120,6 +120,21 @@ export const authSlice = createSlice({
         });
       })
       .addCase(signUpUser.rejected, (state) => {
+        return produce(state, (draftState) => {
+          draftState.loading = false;
+        });
+      })
+      .addCase(resetPassword.pending, (state) => {
+        return produce(state, (draftState) => {
+          draftState.loading = true;
+        });
+      })
+      .addCase(resetPassword.fulfilled, (state, action) => {
+        return produce(state, (draftState) => {
+          draftState.loading = false;
+        });
+      })
+      .addCase(resetPassword.rejected, (state) => {
         return produce(state, (draftState) => {
           draftState.loading = false;
         });
