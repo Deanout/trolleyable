@@ -31,25 +31,26 @@ function Signup() {
             return setError("Passwords do not match")
         }
     
-            setError("")
-            const payload = { 
-                email: emailRef.current.value, 
-                password: passwordRef.current.value 
-            }
-            const result = await dispatch(signUpUser(payload)) as any;
-            window.test = result;
-            if (result.error.code === "auth/email-already-in-use") {
-                resetFormData();
-                return setError("Email address already exists.")
-            } else if (result.error === "auth/weak-password") {
-                resetFormData();
-                return setError("Password must be at least 6 characters.")
-            } else if (result.error !== undefined) {
-                resetFormData();
-                return setError("Failed to sign up. Please check your credentials.")
-            } else {
-                navigate("/")
-            }
+        setError("")
+        const payload = { 
+            email: emailRef.current.value, 
+            password: passwordRef.current.value 
+        }
+        const result = await dispatch(signUpUser(payload)) as any;
+        window.test = result;
+        if (result.error === undefined) {
+            navigate("/")
+        }
+        if (result.error.code === "auth/email-already-in-use") {
+            resetFormData();
+            return setError("Email address already exists.")
+        } else if (result.error.code === "auth/weak-password") {
+            resetFormData();
+            return setError("Password must be at least 6 characters.")
+        } else if (result.error.code !== undefined) {
+            resetFormData();
+            return setError("Failed to sign up. Please check your credentials.")
+        }
 
     }
     const passwordInput = <OutlinedInput id="password" type={showPassword ? 'text' : 'password'} inputRef={passwordRef} endAdornment={
