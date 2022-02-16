@@ -7,6 +7,7 @@ import { auth } from "../../firebase";
 interface AuthState {
   currentUser: any;
   loading: boolean;
+  error: any;
 }
 
 interface UserPayload {
@@ -22,9 +23,14 @@ interface ResetPasswordPayload {
   email: string;
 }
 
+interface UpdatePasswordPayload {
+  password: string;
+}
+
 const initialState: AuthState = {
   currentUser: null,
   loading: true,
+  error: null,
 };
 
 export const loginUser = createAsyncThunk(
@@ -57,6 +63,21 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
+export const updateUserEmail = createAsyncThunk(
+  "auth/updateUserEmail",
+  async (payload: ResetPasswordPayload) => {
+    const response = await auth.currentUser?.updateEmail(payload.email);
+    return response;
+  }
+);
+export const updateUserPassword = createAsyncThunk(
+  "auth/updateUserPassword",
+  async (payload: UpdatePasswordPayload) => {
+    const response = await auth.currentUser?.updatePassword(payload.password);
+    return response;
+  }
+);
+
 export const logoutUser = createAsyncThunk("auth/logoutUser", async () => {
   const response = await auth.signOut();
   return response;
@@ -78,18 +99,21 @@ export const authSlice = createSlice({
       .addCase(loginUser.pending, (state) => {
         return produce(state, (draftState) => {
           draftState.loading = true;
+          draftState.error = null;
         });
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         return produce(state, (draftState) => {
-          console.log(action.payload.user);
           draftState.currentUser = action.payload.user;
           draftState.loading = false;
+          draftState.error = null;
         });
       })
-      .addCase(loginUser.rejected, (state) => {
+      .addCase(loginUser.rejected, (state, action) => {
         return produce(state, (draftState) => {
+          draftState.currentUser = null;
           draftState.loading = false;
+          draftState.error = action.payload;
         });
       })
       .addCase(logoutUser.pending, (state) => {
@@ -138,6 +162,36 @@ export const authSlice = createSlice({
         return produce(state, (draftState) => {
           draftState.loading = false;
         });
+      })
+      .addCase(updateUserEmail.pending, (state) => {
+        return produce(state, (draftState) => {
+          draftState.loading = true;
+        });
+      })
+      .addCase(updateUserEmail.fulfilled, (state, action) => {
+        return produce(state, (draftState) => {
+          draftState.loading = false;
+        });
+      })
+      .addCase(updateUserEmail.rejected, (state) => {
+        return produce(state, (draftState) => {
+          draftState.loading = false;
+        });
+      })
+      .addCase(updateUserPassword.pending, (state) => {
+        return produce(state, (draftState) => {
+          draftState.loading = true;
+        });
+      })
+      .addCase(updateUserPassword.fulfilled, (state, action) => {
+        return produce(state, (draftState) => {
+          draftState.loading = false;
+        });
+      })
+      .addCase(updateUserPassword.rejected, (state) => {
+        return produce(state, (draftState) => {
+          draftState.loading = false;
+        });
       });
   },
 });
@@ -145,8 +199,10 @@ export const authSlice = createSlice({
 export const { setCurrentUser } = authSlice.actions;
 
 export const selectUser = (state: RootState) =>
-  state.auth.currentUser as User | null;
+  state.auth?.currentUser as User | null;
 
-export const selectLoading = (state: RootState) => state.auth.loading;
+export const selectLoading = (state: RootState) => state.auth?.loading;
+
+export const selectErrorMessage = (state: RootState) => state.auth?.error;
 
 export default authSlice.reducer;

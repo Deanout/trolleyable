@@ -1,41 +1,58 @@
-import { Alert, Box, Button, Card, CardActions, CardContent, Container, Divider, FormControl, FormGroup, FormHelperText, Grid, Input, InputLabel, Typography } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Alert, Box, Button, Card, CardActions, CardContent, Container, Divider, FormControl, FormGroup, FormHelperText, Grid, IconButton, Input, InputAdornment, InputLabel, OutlinedInput, Typography } from '@mui/material';
 import { useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth  } from '../contexts/AuthContext';
-import { loginUser } from '../features/auth/authSlice';
+import { loginUser, selectErrorMessage, selectLoading } from '../features/auth/authSlice';
 
 function Login() {
     const emailRef = useRef<HTMLInputElement>();
     const passwordRef = useRef<HTMLInputElement>();
     const [error, setError] = useState("")
-    const [loading, setLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState<boolean>(false);
+    const loading = useSelector(selectLoading)
     const navigate = useNavigate();
     const dispatch = useDispatch();
     
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        setError("")
         if (emailRef?.current === undefined
             || emailRef.current.value === ""
-        || passwordRef?.current === undefined
-        || passwordRef.current.value === "") {
+            || passwordRef?.current === undefined
+            || passwordRef.current.value === "") {
             return setError("Please fill out all fields")
         }
-    
-        try {
-            setError("")
-            setLoading(true)
-            const payload = { 
-                email: emailRef.current.value, 
-                password: passwordRef.current.value 
-            }
-            dispatch(loginUser(payload))
-            setLoading(false)
-            navigate("/");
-        } catch {
-            setError("Failed to create an account")
+        const payload = { 
+            email: emailRef.current.value, 
+            password: passwordRef.current.value 
         }
+        
+        
+        const result = await dispatch(loginUser(payload)) as any;
+        if (result.error !== undefined) {
+            resetFormData();
+            return setError("Failed to login. Please check your credentials.")
+        } else {
+            navigate("/")
+        }
+        
+    }
 
+    const passwordInput = <OutlinedInput id="password" type={showPassword ? 'text' : 'password'} inputRef={passwordRef} endAdornment={
+        <InputAdornment position="end">
+          <IconButton
+            aria-label="toggle password visibility"
+            onClick={() => setShowPassword(!showPassword)}
+            onMouseDown={() => setShowPassword(!showPassword)}
+            edge="end"
+          >
+            {showPassword ? <VisibilityOff /> : <Visibility />}
+          </IconButton>
+        </InputAdornment>
+      }/>;
+      function resetFormData() {
+        passwordInput.props.inputRef.current.value = "";
     }
 
   return (
@@ -47,7 +64,7 @@ function Login() {
                             <Typography variant="h2" color="text.primary" gutterBottom>
                             Login
                             </Typography>
-                            { error && <Alert severity="error">{error}</Alert> }
+                            { error !== "" && <Alert severity="error">{error}</Alert> }
                             <form onSubmit={handleSubmit}>
                                 <FormGroup row={true} id="email-group" sx={{marginTop: "1em"}}>
                                     <FormControl fullWidth>
@@ -57,13 +74,18 @@ function Login() {
                                 </FormGroup>
                                 <FormGroup row={true} id="password-group" sx={{marginTop: "1em"}}>
                                     <FormControl fullWidth>
-                                        <InputLabel required htmlFor="password" id="password-label">Password</InputLabel>
-                                        <Input id="password" type="password" inputRef={passwordRef}/>
+                                        <InputLabel variant="filled" required htmlFor="password" id="password-label">Password</InputLabel>
+                                        {passwordInput}
                                     </FormControl>
                                 </FormGroup>
                                 <FormGroup row={true} id="submit-group"sx={{marginTop: "1em"}}>
                                     <FormControl fullWidth>
-                                        <Button disabled={loading} variant="contained" color="primary" type="submit" id="submit-button">Login</Button>
+                                        <Button 
+                                        disabled={loading} 
+                                        variant="contained" 
+                                        color="primary" 
+                                        type="submit" 
+                                        id="submit-button">Login</Button>
                                     </FormControl>
                                 </FormGroup>
                             </form>

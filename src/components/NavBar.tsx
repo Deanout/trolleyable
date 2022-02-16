@@ -70,7 +70,6 @@ export default function MenuAppBar() {
     )
   } else {
     navLinks = (
-
       <Box sx={{ flexGrow: 0, display: { xs: 'none', md: 'flex' } }}>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1}}>
           <Button component={Link} 
@@ -111,7 +110,7 @@ export default function MenuAppBar() {
                 Trolleyable
             </Button>
           </Typography>
-          {navLinks}
+          {loading ? "" : navLinks}
         </Toolbar>
       </AppBar>
     </Box>
